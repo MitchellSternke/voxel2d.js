@@ -1,0 +1,129 @@
+<html>
+<head>
+    <title>Test</title>
+
+    <script src="./voxel2d.js"></script>
+    <script src="./demos.js"></script>
+    <script type="text/javascript">
+        var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+        var ARGUMENT_NAMES = /([^\s,]+)/g;
+        function getParamNames(func) {
+            var fnStr = func.toString().replace(STRIP_COMMENTS, '');
+            var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+            if(result === null)
+                result = [];
+            return result;
+        }
+
+        function test(canvas) {
+
+            var selectTest = function(canvas) {
+            }
+
+            var tests = [ 
+                selectTest, 
+                demoDrawCube,
+                demoDrawPyramid,
+                demoDrawEllipsoid
+            ];
+
+            var testSelect = document.getElementById("testSelect");
+
+            for (var i = 0; i < tests.length; i++) {
+                var option = document.createElement("option");
+                option.value = tests[i].name;
+                option.innerText = tests[i].name;
+
+                testSelect.appendChild(option);
+            }
+
+            testSelect.oninput = function() {
+                var index = testSelect.selectedIndex;
+                if (index != -1) {
+                    var params = getParamNames(tests[index]);
+
+                    testParamsTable = document.getElementById("testParamsTable");
+                    var tbody = document.createElement("tbody");
+                    for (var i = 1; i < params.length; i++) {
+                        var tr = document.createElement("tr");
+
+                        var tdName = document.createElement("td");
+                        var tdValue = document.createElement("td");
+
+                        tdName.innerText = params[i];
+                        var input = document.createElement("input");
+                        input.id = "param_" + params[i];
+                        tdValue.appendChild(input);
+
+                        tr.appendChild(tdName);
+                        tr.appendChild(tdValue);
+
+                        tbody.appendChild(tr);
+                    }
+
+                    testParamsTable.innerHTML = "";
+                    testParamsTable.appendChild(tbody);
+                }
+            }
+
+            var runTestButton = document.getElementById("runTestButton");
+            runTestButton.onclick = function() {
+                var index = testSelect.selectedIndex;
+                if (index != -1) {
+                    var args = [canvas];
+
+                    // Get param values from the form
+                    //
+                    var params = getParamNames(tests[index]);
+                    for (var i = 1; i < params.length; i++) {
+                        var inputElement = document.getElementById("param_" + params[i]);
+                        args.push(inputElement.value);
+                    }
+
+                    // Clear the canvas
+                    //
+                    var context = canvas.getContext("2d");
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Time and run the test
+                    //
+                    var timerOutput = document.getElementById("timerOutput");
+                    timerOutput.innerText = "";
+
+                    var start = new Date().getTime();
+
+                    tests[index].apply(null, args);
+
+                    var end = new Date().getTime();
+                    var time = end - start;
+
+                    var timerOutput = document.getElementById("timerOutput");
+                    timerOutput.innerText = "Test completed in " + time + " ms";
+                }
+            }
+        }
+
+        window.onload = function() {
+            canvas = document.getElementById("canvas1");
+            
+            test(canvas);
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Test</h1>
+
+    <h2>Select Test</h2>
+    <select id="testSelect" name="Select Test">
+    </select>
+    <button id="runTestButton">Run Test</button>
+
+    <table id="testParamsTable"><tbody></tbody></table>
+
+    <h2>Output</h2>
+    <p id="timerOutput"></p>
+    <canvas id="canvas1" width="2000" height="2000">Test Canvas</canvas>
+</body>
+
+</html>
