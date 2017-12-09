@@ -230,6 +230,21 @@ class VoxelSurface {
                         continue;
                     }
 
+                    // Check the voxel is completely obscured by other voxels
+                    // If so, skip rendering
+                    //
+                    if (i > 0 && k > 0 && j < this.height - 1) {
+                        const index1 = this.voxelIndex(i - 1, j, k);
+                        const index2 = this.voxelIndex(i, j + 1, k);
+                        const index3 = this.voxelIndex(i, j, k - 1);
+
+                        if (this.voxelBuffer[index1] != 0 && 
+                            this.voxelBuffer[index2] != 0 &&
+                            this.voxelBuffer[index3] != 0) {
+                                continue;
+                        }
+                    }
+
                     var r = 0;
                     var g = 0;
                     var b = 0;
